@@ -2,6 +2,9 @@ import numpy as np
 import scipy
 from scipy import optimize
 
+from CalculateEnergyUse import calc_eff
+from functions import *
+
 xf # Final Position
 x0 # Current Starting Point - Path_bez
 step_max # Max Step Distance
@@ -174,25 +177,3 @@ if Dynamic_Obstacles:
 
 # NOTE most of the code in this block will be different from the matlab code
 Pmid = [-min_speed/2, -min_speed/2]
-
-
-
-
-
-
-
-
-
-def calc_eff(V):
-    a = -0.0024
-    b = 0.084
-    c = -0.9
-    d = 3.6
-
-    if V < 10:
-        eta = V*0.06
-    elif V < 20:
-        eta = a*V**3 + b*V**2 + c*V + d
-    else:
-        eta = 0.00001
-    return eta
