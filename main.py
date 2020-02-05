@@ -1,4 +1,6 @@
 import numpy as np
+import scipy
+from scipy import optimize
 
 xf # Final Position
 x0 # Current Starting Point - Path_bez
@@ -144,6 +146,36 @@ if uav_finite_size:
     uav_ws = 1.91 # UAV wing span
 else:
     uav_ws = 0.001
+
+# Starting / Ending position of the plane
+x_sp = [0,0]
+x0 = x_sp
+xf = [100, 100]
+Bez_points = []
+lr = 15 # Landing zone radius (should be <= 15??)
+
+#--------------------------------------------------#
+
+#-------static obstacle information---------#
+n_obs = GET_FROM_METIS # Number of static obstacles
+obs = GET_FROM_METIS # Obstacle locations
+obs_rad = GET_FROM_METIS # Obstacle radii
+#--------------------------------------------------#
+
+# Calculate density
+obs_density = calc_obs_den(n_obs, obs, obs_rad, uav_ws)
+
+#-------dynamic obstacle information---------#
+if Dynamic_Obstacles:
+    pleaseDeleteMeAndIncorporateThisFunction = 1
+    # FIXME need to incorporate other telemetry signals here
+
+#----------------- optimizer ---------- fmincon -----------------------#
+
+# NOTE most of the code in this block will be different from the matlab code
+Pmid = [-min_speed/2, -min_speed/2]
+
+
 
 
 
