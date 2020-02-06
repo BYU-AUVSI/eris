@@ -2,37 +2,38 @@ import numpy as np
 import scipy
 from scipy import optimize
 
-xf # Final Position
-x0 # Current Starting Point - Path_bez
-step_max # Max Step Distance
-step_min # Min Step Distance
-t #parameterization variable
-n_obs # number of obstacles
-obs # positions of obstacles
-obs_rad # radius of obstacles
-turn_r # minimum turn radius
-Pmid # needed to match derivatives
-num_path # number of segments optimized
-x_new
-Dynamic_Obstacles
-x_next # used in multi_start function
-uav_ws # UAV wing span
-start
-initial # to calculate d_l_min
-initial = 1
-uav_finite_size
-rho, f, W, span, eo
-summer_c, cool_c, copper_c, parula_c, winter_c, blue_red, blue_magenta_red, green_purple, blue_gray_red, shortened_viridis_c, shortened_inferno_c, shortened_parula_c
-obj_grad, cons_grad, ag, acg
-max_speed, min_speed, D_eta_opt
-l_l_last
+class GLOBALS():
+    xf = None # Final Position
+    x0 = None # Current Starting Point - Path_bez
+    step_max = None # Max Step Distance
+    step_min = None # Min Step Distance
+    t = None #parameterization variable
+    n_obs = None # number of obstacles
+    obs = None # positions of obstacles
+    obs_rad = None # radius of obstacles
+    turn_r = None # minimum turn radius
+    Pmid = None # needed to match derivatives
+    num_path = None # number of segments optimized
+    x_new = None
+    Dynamic_Obstacles = None
+    x_next = None # used in multi_start function
+    uav_ws = None # UAV wing span
+    start = None
+    initial = None # to calculate d_l_min
+    initial = 1
+    uav_finite_size = None
+    rho, f, W, span, eo = None, None, None, None, None
+    # summer_c, cool_c, copper_c, parula_c, winter_c, blue_red, blue_magenta_red, green_purple, blue_gray_red, shortened_viridis_c, shortened_inferno_c, shortened_parula_c
+    obj_grad, cons_grad, ag, acg = None, None, None, None
+    max_speed, min_speed, D_eta_opt = None, None, None
+    l_l_last = None
 
 ############### ----- Algorithm Options ----- ###############
-Dynamic_Obstacles = 0 # Set to 1 to use dynamic obstacles, 0 for only static obstacles
+GLOBALS.Dynamic_Obstacles = 0 # Set to 1 to use dynamic obstacles, 0 for only static obstacles
 
-num_path = 3 # Receding Horizon Approach (can be any number, 3 is fairly standard. Represents how many path segments ahead the algorithm will look when planning a path)
+GLOBALS.num_path = 3 # Receding Horizon Approach (can be any number, 3 is fairly standard. Represents how many path segments ahead the algorithm will look when planning a path)
 ms_i = 3 # Number of guesses for multi start (up to 8, 3 is good for a smart algorithm)
-uav_finite_size = 1 # Whether or not to include the UAV size (1 to include, 0 to ignore)
+GLOBALS.uav_finite_size = 1 # Whether or not to include the UAV size (1 to include, 0 to ignore)
 check_viability = 1 # Check if the path is viable. When set to 1 the code will exit if the path isn't viable
 
 ### Objective Function Options
@@ -84,29 +85,29 @@ color_bar = 0
 create_video = 1          #saves the solutions of the multistart approach at each iteration
 
 # Gradient Calculation Options
-obj_grad = 1           #if this is 1 and below line is 0, complex step method will be used to calculate gradients
+GLOBALS.obj_grad = 1           #if this is 1 and below line is 0, complex step method will be used to calculate gradients
 analytic_gradients = 1
-ag = analytic_gradients
+GLOBALS.ag = analytic_gradients
 
-cons_grad = 1          #if this is 1 and below line is 0, complex step method will be used to calculate gradients
+GLOBALS.cons_grad = 1          #if this is 1 and below line is 0, complex step method will be used to calculate gradients
 analytic_constraint_gradients = 1
-acg = analytic_constraint_gradients
+GLOBALS.acg = analytic_constraint_gradients
 
 #----------------plane geometry/info----------------#
 #UAV parameter values
-rho = 1.225 #air density
-f = .2   #equivalent parasite area
-W = 10 #weight of aircraft
-span = .20   #span
-eo = 0.9 #Oswald's efficiency factor
+GLOBALS.rho = 1.225 #air density
+GLOBALS.f = .2   #equivalent parasite area
+GLOBALS.W = 10 #weight of aircraft
+GLOBALS.span = .20   #span
+GLOBALS.eo = 0.9 #Oswald's efficiency factor
 
 if optimize_energy_use == 1:
     #Defined in paper (2nd column, page 2)
-    A = rho*f/(2*W)
-    B = 2*W/(rho*span^2*np.pi*eo)
+    A = GLOBALS.rho*GLOBALS.f/(2*GLOBALS.W)
+    B = 2*GLOBALS.W/(GLOBALS.rho*GLOBALS.span**2*np.pi*GLOBALS.eo)
     
     #find minimum d_l, and minimum efficiency
-    if initial == 1:
+    if GLOBALS.initial == 1:
         V_possible = np.arange(0.1,25.01,0.01)
         D_eta = [0] * len(V_possible)
         for i in range(0,len(V_possible)):
@@ -119,80 +120,65 @@ if optimize_energy_use == 1:
             D_eta[i] = D_L/eta_pos
         
         #find optimal D_eta
-        D_eta_opt = min(D_eta)   
+        GLOBALS.D_eta_opt = min(D_eta)   
     
 # --------------------------------- #
 
 l = 0
 
 # Parameterization vector t
-t = np.linspace(0,1,11)
-delta_t = t[1] - t[0]
+GLOBALS.t = np.linspace(0,1,11)
+delta_t = GLOBALS.t[1] - GLOBALS.t[0] # NOTE if you have a pylinter error on this line, it is false. It works just fine so just ignore it. :)
 
-turn_r = 40 # Turn radius, m
+GLOBALS.turn_r = 40 # Turn radius, m
 
 # Maximum / stall speed, m/s
-max_speed = 23
-min_speed = 16
+GLOBALS.max_speed = 23
+GLOBALS.min_speed = 16
 
-l_l_last = min_speed / len(t)
+GLOBALS.l_l_last = GLOBALS.min_speed / len(GLOBALS.t)
 
 # Translate UAV information to fit with algorithm
-step_max = max_speed
-step_min = min_speed
+GLOBALS.step_max = GLOBALS.max_speed
+GLOBALS.step_min = GLOBALS.min_speed
 
 # Wing Span of UAV
-if uav_finite_size:
-    uav_ws = 1.91 # UAV wing span
+if GLOBALS.uav_finite_size:
+    GLOBALS.uav_ws = 1.91 # UAV wing span
 else:
-    uav_ws = 0.001
+    GLOBALS.uav_ws = 0.001
 
 # Starting / Ending position of the plane
 x_sp = [0,0]
-x0 = x_sp
-xf = [100, 100]
+GLOBALS.x0 = x_sp
+GLOBALS.xf = [100, 100]
 Bez_points = []
 lr = 15 # Landing zone radius (should be <= 15??)
 
 #--------------------------------------------------#
 
 #-------static obstacle information---------#
-n_obs = GET_FROM_METIS # Number of static obstacles
-obs = GET_FROM_METIS # Obstacle locations
-obs_rad = GET_FROM_METIS # Obstacle radii
+GLOBALS.n_obs = GET_FROM_METIS # Number of static obstacles
+GLOBALS.obs = GET_FROM_METIS # Obstacle locations
+GLOBALS.obs_rad = GET_FROM_METIS # Obstacle radii
 #--------------------------------------------------#
 
 # Calculate density
-obs_density = calc_obs_den(n_obs, obs, obs_rad, uav_ws)
+obs_density = calc_obs_den(GLOBALS.n_obs, GLOBALS.obs, GLOBALS.obs_rad, GLOBALS.uav_ws)
 
 #-------dynamic obstacle information---------#
-if Dynamic_Obstacles:
+if GLOBALS.Dynamic_Obstacles:
     pleaseDeleteMeAndIncorporateThisFunction = 1
     # FIXME need to incorporate other telemetry signals here
 
 #----------------- optimizer ---------- fmincon -----------------------#
 
 # NOTE most of the code in this block will be different from the matlab code
-Pmid = [-min_speed/2, -min_speed/2]
+GLOBALS.Pmid = [-(GLOBALS.min_speed/2), -(GLOBALS.min_speed/2)]
 
+Path_bez = []
+path_start = []
 
-
-
-
-
-
-
-
-def calc_eff(V):
-    a = -0.0024
-    b = 0.084
-    c = -0.9
-    d = 3.6
-
-    if V < 10:
-        eta = V*0.06
-    elif V < 20:
-        eta = a*V**3 + b*V**2 + c*V + d
-    else:
-        eta = 0.00001
-    return eta
+GLOBALS.start = 0 # Used in multi_start, indicates that the program is in the first iteration
+xi = multi_start(ms_i)
+GLOBALS.start = 1
