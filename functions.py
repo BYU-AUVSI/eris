@@ -20,12 +20,12 @@ def calc_obs_den(n_obs, obs, obs_rad, uav_ws):
         The wingspan of the UAV.
     """
 
-    points = 500
+    points = 1000
 
-    x = np.linspace(0,100,points)
-    y = np.linspace(0,100,points)
+    x = np.linspace(-500,500,points)
+    y = np.linspace(-500,500,points)
 
-    field = np.zeros(points)
+    field = np.zeros((points, points))
 
     for i in range(len(x)):
         for j in range(len(y)):

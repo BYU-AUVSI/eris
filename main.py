@@ -2,6 +2,9 @@ import numpy as np
 import scipy
 from scipy import optimize
 
+from CalculateEnergyUse import calc_eff
+from functions import *
+
 class GLOBALS():
     xf = None # Final Position
     x0 = None # Current Starting Point - Path_bez
@@ -158,9 +161,17 @@ lr = 15 # Landing zone radius (should be <= 15??)
 #--------------------------------------------------#
 
 #-------static obstacle information---------#
-GLOBALS.n_obs = GET_FROM_METIS # Number of static obstacles
-GLOBALS.obs = GET_FROM_METIS # Obstacle locations
-GLOBALS.obs_rad = GET_FROM_METIS # Obstacle radii
+from metis.generator import MissionGenerator
+mission = MissionGenerator().get_mission()
+GLOBALS.n_obs = len(mission.obstacles) # Number of static obstacles
+GLOBALS.obs = [] # Obstacle locations
+GLOBALS.obs_rad = [] # Obstacle radii
+for obs in mission.obstacles:
+    n, e, _, r = obs.to_array()
+    GLOBALS.obs.append([n, e])
+    GLOBALS.obs_rad.append(r)
+GLOBALS.obs = np.array(GLOBALS.obs)
+GLOBALS.obs_rad = np.array(GLOBALS.obs_rad)
 #--------------------------------------------------#
 
 # Calculate density
