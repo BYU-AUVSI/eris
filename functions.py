@@ -36,3 +36,75 @@ def calc_obs_den(n_obs, obs, obs_rad, uav_ws):
     obs_density = np.sum(np.sum(field))/points**2
 
     return obs_density
+
+
+def multi_start(ms_i):
+    """
+    Multi start functionality for optimization.
+
+    Returns
+    -------
+    x_guess : 
+    """
+
+    su = 0
+
+    #global variables
+
+    num_path, x0, step_max, step_min, x_next, start = (
+        GLOBALS.num_path,
+        GLOBALS.x0,
+        GLOBALS.step_max,
+        GLOBALS.step_min,
+        GLOBALS.x_next,
+        GLOBALS.start
+    )
+
+    x_guess = np.zeros((2*num_path,2,ms_i))
+
+    for i in range(ms_i):
+        for j in range(2*num_path):
+            #different starting paths for different cases
+            if i == 0: #top right diagonal
+                if num_path > 1
+                    if start == 1 #
+                        
+                        if j >= 2*num_path-1
+                            x_guess(j,:,i) = [x_guess(2*num_path-2,1,i) + 0.25*(j-(2*num_path-2))*step_max, x_guess(2*num_path-2,2,1) + 0.25*(j-(2*num_path-2))*step_max + su]
+                        else
+                            x_guess(j,:,i) = [x_next(j+2,1),x_next(j+2,2) + su]
+                        end
+                        
+                    else
+                        x_guess(j,:,i) = [x0(1) + 0.25*j*step_max, x0(2) + 0.25*j*step_max + su]
+                    end
+                    
+                else
+                    
+                    x_guess(j,:,i) = [x0(1) + 0.25*j*step_max, x0(2) + 0.25*j*step_max + su]
+                    
+                end
+                
+            elif i == 1: #right straight
+                x_guess(j,:,i) = [x0(1) + 0.25*j*step_max, x0(2) + 0.25*(j-j^2/(num_path*4))*step_max]
+                
+            elif i == 2: #top straight
+                x_guess(j,:,i) = [x0(1) + 0.25*(j-j^2/(num_path*4))*step_max, x0(2) + 0.25*j*step_max]       
+                
+            elif i == 3: #to the right, slightly down
+                x_guess(j,:,i) = [x0(1)+0.25*j*step_max, x0(2)-0.125*j*step_max]
+                #x_guess(j,:,i) = [x0(1) + 0.125*j*step_max, x0(2) + 0.125*(j-j^2/(num_path*4))*step_max]
+                
+            elif i == 4: #to the top, slightly left
+                x_guess(j,:,i) = [x0(1)-0.125*j*step_max, x0(2)+0.25*j*step_max]
+                #x_guess(j,:,i) = [x0(1) + 0.125*(j-j^2/(num_path*4))*step_max, x0(2) + 0.125*j*step_max]
+                
+            elif i == 5: #to the right, slightly down
+                x_guess(j,:,i) = [x0(1)+0.125*j*step_max, x0(2)+0.0625*j*step_max]
+                
+            elif i == 6: #to the top, slightly left
+                x_guess(j,:,i) = [x0(1)+0.0625*j*step_max, x0(2)+0.125*j*step_max]
+                
+            else:
+                break #outside of range, need to initialize more guesses (do randomly maybe?)
+    return x_guess

@@ -161,8 +161,11 @@ lr = 15 # Landing zone radius (should be <= 15??)
 #--------------------------------------------------#
 
 #-------static obstacle information---------#
+import time
+start = time.time()
 from metis.generator import MissionGenerator
 mission = MissionGenerator().get_mission()
+print("time to generate mission:", time.time() - start)
 GLOBALS.n_obs = len(mission.obstacles) # Number of static obstacles
 GLOBALS.obs = [] # Obstacle locations
 GLOBALS.obs_rad = [] # Obstacle radii
@@ -175,7 +178,9 @@ GLOBALS.obs_rad = np.array(GLOBALS.obs_rad)
 #--------------------------------------------------#
 
 # Calculate density
+start = time.time()
 obs_density = calc_obs_den(GLOBALS.n_obs, GLOBALS.obs, GLOBALS.obs_rad, GLOBALS.uav_ws)
+print("time to calculate obstacle density:", time.time() - start)
 
 #-------dynamic obstacle information---------#
 if GLOBALS.Dynamic_Obstacles:
