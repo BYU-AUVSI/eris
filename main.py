@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import scipy
 from scipy import optimize
@@ -5,33 +7,12 @@ from scipy import optimize
 from CalculateEnergyUse import calc_eff
 from functions import *
 
-class GLOBALS():
-    xf = None # Final Position
-    x0 = None # Current Starting Point - Path_bez
-    step_max = None # Max Step Distance
-    step_min = None # Min Step Distance
-    t = None #parameterization variable
-    n_obs = None # number of obstacles
-    obs = None # positions of obstacles
-    obs_rad = None # radius of obstacles
-    turn_r = None # minimum turn radius
-    Pmid = None # needed to match derivatives
-    num_path = None # number of segments optimized
-    x_new = None
-    Dynamic_Obstacles = None
-    x_next = None # used in multi_start function
-    uav_ws = None # UAV wing span
-    start = None
-    initial = None # to calculate d_l_min
-    initial = 1
-    uav_finite_size = None
-    rho, f, W, span, eo = None, None, None, None, None
-    # summer_c, cool_c, copper_c, parula_c, winter_c, blue_red, blue_magenta_red, green_purple, blue_gray_red, shortened_viridis_c, shortened_inferno_c, shortened_parula_c
-    obj_grad, cons_grad, ag, acg = None, None, None, None
-    max_speed, min_speed, D_eta_opt = None, None, None
-    l_l_last = None
+from glo import GLOBALS
 
 ############### ----- Algorithm Options ----- ###############
+# use genetic algorithm
+use_ga = False
+
 GLOBALS.Dynamic_Obstacles = 0 # Set to 1 to use dynamic obstacles, 0 for only static obstacles
 
 GLOBALS.num_path = 3 # Receding Horizon Approach (can be any number, 3 is fairly standard. Represents how many path segments ahead the algorithm will look when planning a path)
@@ -136,8 +117,8 @@ delta_t = GLOBALS.t[1] - GLOBALS.t[0] # NOTE if you have a pylinter error on thi
 GLOBALS.turn_r = 40 # Turn radius, m
 
 # Maximum / stall speed, m/s
-GLOBALS.max_speed = 23
-GLOBALS.min_speed = 16
+GLOBALS.max_speed = 15 #23
+GLOBALS.min_speed = 10 #16
 
 GLOBALS.l_l_last = GLOBALS.min_speed / len(GLOBALS.t)
 
@@ -152,9 +133,9 @@ else:
     GLOBALS.uav_ws = 0.001
 
 # Starting / Ending position of the plane
-x_sp = [0,0]
+x_sp = [-500,-500]
 GLOBALS.x0 = x_sp
-GLOBALS.xf = [100, 100]
+GLOBALS.xf = [500, 500]
 Bez_points = []
 lr = 15 # Landing zone radius (should be <= 15??)
 
@@ -178,9 +159,9 @@ GLOBALS.obs_rad = np.array(GLOBALS.obs_rad)
 #--------------------------------------------------#
 
 # Calculate density
-start = time.time()
-obs_density = calc_obs_den(GLOBALS.n_obs, GLOBALS.obs, GLOBALS.obs_rad, GLOBALS.uav_ws)
-print("time to calculate obstacle density:", time.time() - start)
+# start = time.time()
+# obs_density = calc_obs_den(GLOBALS.n_obs, GLOBALS.obs, GLOBALS.obs_rad, GLOBALS.uav_ws)
+# print("time to calculate obstacle density:", time.time() - start)
 
 #-------dynamic obstacle information---------#
 if GLOBALS.Dynamic_Obstacles:
@@ -198,3 +179,189 @@ path_start = []
 GLOBALS.start = 0 # Used in multi_start, indicates that the program is in the first iteration
 xi = multi_start(ms_i)
 GLOBALS.start = 1
+
+# import matplotlib.pyplot as plt
+# for i in range(ms_i):
+#     plt.plot(xi[:,0,i], xi[:,1,i])
+# plt.show()
+
+#x_new is not close to final position
+x_new = np.zeros((2*GLOBALS.num_path,2))
+x_next = x_new
+
+# note: each iteration of while loop represents some time step, in which
+# UAV travels on path and dynamic obstacles move
+
+# #fmincon options
+# if GLOBALS.obj_grad == 1 and GLOBALS.cons_grad == 1:
+#     options = optimoptions('fmincon','Algorithm','sqp','MaxFunEvals',max_func_evals,'MaxIter',max_iter, \
+#         'GradObj','on','GradCon','on','DerivativeCheck','off')
+# elif GLOBALS.obj_grad == 0 and GLOBALS.cons_grad == 1:
+#     options = optimoptions('fmincon','Algorithm','sqp','MaxFunEvals',max_func_evals,'MaxIter',max_iter, \
+#         'GradObj','off','GradCon','on','DerivativeCheck','off')
+# elif GLOBALS.obj_grad == 1 and GLOBALS.cons_grad == 0:
+#     options = optimoptions('fmincon','Algorithm','sqp','MaxFunEvals',max_func_evals,'MaxIter',max_iter, \
+#         'GradObj','on','GradCon','off','DerivativeCheck','off')
+# else:
+#     options = optimoptions('fmincon','Algorithm','sqp','MaxFunEvals',max_func_evals,'MaxIter',max_iter, \
+#         'GradObj','off','GradCon','off')
+
+tic = time.time() # begin optimization time
+
+
+
+import sys
+sys.exit()
+
+while ( ( (x_next[2*GLOBALS.num_path - 1,0]-GLOBALS.xf[0])**2. + (x_next[2*GLOBALS.num_path - 1,1]-GLOBALS.xf[1])**2. ) ** 0.5 > lr ):
+    #record number of paths
+    l = l + 1
+    break;
+
+#     for i in range(ms_i): #multistart approach to find best solution
+        
+#         #choose objective function
+#         if optimize_energy_use == 1:
+            
+#             if use_ga:
+#                 NotImplementedError('Not ready yet for ga')
+#             else:
+#                 [x_new(:,:,i),~,e(i,l)] = fmincon(@opt_e, xi(:,:,i) , A, b, Aeq, beq, lb, ub, @cons,options)
+            
+#         elif optimize_time == 1:
+            
+#             if use_ga:
+#                 NotImplementedError('Not ready yet for ga')
+#             else
+#                 [x_new(:,:,i),~,e(i,l)] = fmincon(@opt_t, xi(:,:,i) , A, b, Aeq, beq, lb, ub, @cons,options)
+            
+#         else
+            
+#             if use_ga == 1
+#                 NotImplementedError('Not ready yet for ga')
+#             else
+#                 [x_new(:,:,i),~,e(i,l)] = fmincon(@opt_d, xi(:,:,i) , A, b, Aeq, beq, lb, ub, @cons,options)
+        
+#         #         #check curvature
+#         #         c = check_curvature_new(i)
+#         #
+#         #         #if constraints are violated, make infeasible
+#         #         if any(c > 0)
+#         #             e(i,l) = -2
+#         #         end
+#     end
+    
+#     for i = 1 : ms_i #calculate how good solutions are
+        
+#         # For make_video
+#         if create_video == 1
+            
+#             if i == 1
+#                 solution1 = [solution1 x_new(:,:,i)]
+#             elif i == 2
+#                 solution2 = [solution2 x_new(:,:,i)]
+#             elif i == 3
+#                 solution3 = [solution3 x_new(:,:,i)]
+#             elif i == 4
+#                 solution4 = [solution4 x_new(:,:,i)]
+#             elif i == 5
+#                 solution5 = [solution5 x_new(:,:,i)]
+#             end
+#         end
+        
+#         if optimize_energy_use == 1
+#             d_check(i) = opt_e(x_new(:,:,i))
+            
+#         elif optimize_time == 1
+#             d_check(i) = opt_t(x_new(:,:,i))
+            
+#         else
+#             d_check(i) = opt_d(x_new(:,:,i))
+            
+#         end
+        
+#         #'remove' solutions that converged to an infeasible point
+        
+#         if e(i,l) == -2
+            
+#             d_check(i) = d_check(i)*10
+            
+#         end
+        
+        
+#     end
+    
+#     #Check for viable paths
+#     check = (e == -2)
+#     if all(check(:,l)) == 1 and check_viability == 1
+#         #error('Unable to find viable path.')
+#     end
+    
+#     for i = 1 : ms_i #choose best solution, use for next part
+        
+#         if d_check(i) == min(d_check)
+            
+#             x_next = x_new(:,:,i)
+            
+#         end
+#     end
+    
+#     #
+#     initial = 0
+    
+#     # makes the path of the UAV for this section
+#     for i = 1 : length(t)
+        
+#         path_part(i,:) = (1-t(i)) **2*x0(1,:) + 2*(1-t(i))*t(i)*x_next(1,:)+t(i) **2*x_next(2,:)
+        
+#         #         if i > 1
+#         #         norm(path_part(i,:)-path_part(i-1,:))
+#         #         end
+        
+#     end
+    
+    
+    
+    
+#     #make the planned path of the UAV
+#     if num_path > 1
+#         for j = 1 : (num_path-1)
+#             for i = 1 : length(t)
+#                 path_planned(i+(j-1)*length(t),:) = (1-t(i)) **2*x_next(2*j,:) + 2*(1-t(i))*t(i)*x_next(2*j+1,:)+t(i) **2*x_next(2*j+2,:)
+#             end
+#         end
+#     end
+    
+#     if Show_Steps == 1
+        
+#         plot_int_steps(l, square_axes, color_bar, totl, x_sp, cx, speed_color, path_part, path_planned, Path_bez, d_speed_color, cb \
+#             ,linewidth, traversedwidth, dashedwidth, radar, show_sp, show_end, sds, lr)
+#     end
+    
+#     #----------------------------------------------------------#
+    
+#     #record where start of each path is
+#     path_start = [path_start path_part(1,:)]
+    
+#     #continues the path which will be plotted
+#     Path_bez = [Path_bez path_part]
+    
+#     l_l_last = norm(Path_bez(length(Path_bez),:)-Path_bez(length(Path_bez)-1,:))
+    
+#     #set new starting point
+#     x0 = x_next(2,:)
+    
+#     #set Pmid
+#     Pmid = x_next(1,:)
+    
+#     #choose new guess for next iteration
+#     xi = multi_start(ms_i)
+    
+#     #print current location
+#     x_next(2,:)
+    
+#     Bez_points = [Bez_points x_next(1:2,:)]
+    
+# end #while
+
+# toc # end optimization time
